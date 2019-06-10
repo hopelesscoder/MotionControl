@@ -1,5 +1,6 @@
-#include <Adafruit_Sensor.h>
-#include "DHT.h"
+#include <Adafruit_Sensor.h>//1.0.3
+#include "DHT.h" //1.3.4
+//ArduinoJson v5.13.5
 
 
 bool DEBUG = true;   //show more logs
@@ -74,7 +75,6 @@ void setup()
           }else{
             isError = true;
           }
-        //}
      }else{
       isError = true;
      }
