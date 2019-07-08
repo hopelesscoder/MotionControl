@@ -14,7 +14,7 @@ String ipClient = "192.168.43.1";
 // defines pins numbers
 #define TRIGPIN  5
 #define ECHOPIN 6
-#define DHTPIN A0      // DHT-22 Output Pin connection
+#define DHTPIN A0      // DHT 11 Output Pin connection
 #define DHTTYPE DHT11   // DHT Type is DHT 11
 
 // defines variables
@@ -40,14 +40,13 @@ void setup()
   pinMode(TRIGPIN, OUTPUT); // Sets the TRIGPIN as an Output
   pinMode(ECHOPIN, INPUT); // Sets the ECHOPIN as an Input
 
-  pinMode(13, OUTPUT); //set build in led as output
-  // Open serial communications and wait for port to open esp8266:
+  // Open serial communications
   Serial.begin(115200);
   Serial1.begin(115200);
 
   boolean isError = false;
 
-  String responseAT = sendToWifi("AT", responseTime, DEBUG); // configure as station
+  String responseAT = sendToWifi("AT", responseTime, DEBUG); // Tests AT Startup
   if (find(responseAT, "OK")){
     String responseATCWMODE = sendToWifi("AT+CWMODE=1", responseTime, DEBUG); // configure as station
      if (find(responseATCWMODE, "OK")){
@@ -92,7 +91,7 @@ void setup()
       }
       temp= dht.readTemperature();  // Get Temperature value
       while(isnan(temp)){
-        temp = dht.readHumidity();
+        temp = dht.readTemperature();
       }
   }
 
@@ -118,30 +117,30 @@ void loop()
 
     String message = readWifiSerialMessage();
     Serial.println("message: "+message);
-    if (find(message, "esp8266:")) {
-      String result = sendToWifi(message.substring(8, message.length()), responseTime, DEBUG);
-      if (find(result, "OK"))
-        sendData("\n" + result);
-      else
-        sendData("\nErrRead");               //At command ERROR CODE for Failed Executing statement
-      sendToDue("Errore, non ricevuto OK, ricevuto messaggio: " + message, responseTime, DEBUG);
-    } else {
-      sendData("\nErrRead");                 //Command ERROR CODE for UNABLE TO READ
-      sendToDue("Errore, message received: " + message, responseTime, DEBUG);
-    }
+   // if (find(message, "esp8266:")) {
+    //  String result = sendToWifi(message.substring(8, message.length()), responseTime, DEBUG);
+    //  if (find(result, "OK"))
+    //    sendData("\n" + result);
+    //  else
+    //    sendData("\nErrRead");               //At command ERROR CODE for Failed Executing statement
+    //  sendToDue("Errore, non ricevuto OK, ricevuto messaggio: " + message, responseTime, DEBUG);
+ //   } else {
+    //  sendData("\nErrRead");                 //Command ERROR CODE for UNABLE TO READ
+    //  sendToDue("Errore, message received: " + message, responseTime, DEBUG);
+  //  }
   }
   if(detectMotion()){
     Serial.println("!!!Movement detected!!!");
     sendData("Movement detected!");    
     delay(2000);
   }
-  delay(responseTime);
+  //delay(responseTime);
 }
 
 
 /*
   Name: sendData
-  Description: Function used to send string to tcp client using cipsend
+  Description: Function used to send string to tcp server using cipsend
   Params:
   Returns: void
 */
@@ -277,14 +276,13 @@ boolean detectMotion() {
   // Convert to cm/ms  
   soundcm = soundsp / 10000;
     
-  //duration = sonar.ping_median(iterations);
-  duration = computeDuration(1);
-  //Serial.println("Duration: "+duration);
+
+  duration = computeDuration(1);//iterations to compute the duration
   
   // Calculate the distance
   distance = (duration / 2) * soundcm;
 
-  if (distance < 20) {
+  if (distance < 20) {//in cm
     return true;
   } else {
     return false;
